@@ -28,6 +28,9 @@ export const commandAliases = {
   'profile': 'profile',
   'me': 'profile',
   
+  'play': 'play',
+  'p': 'play',
+  
   'admin': 'whiscyadmin',
   'setwhiscy': 'whiscyadmin',
 };

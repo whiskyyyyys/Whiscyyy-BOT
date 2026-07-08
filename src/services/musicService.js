@@ -8,8 +8,9 @@ import {
     StreamType
 } from '@discordjs/voice';
 import { logger } from '../utils/logger.js';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, ActivityType } from 'discord.js';
 import { InteractionHelper } from '../utils/interactionHelper.js';
+import config from '../config/application.js';
 
 // Map to store guild music queues
 // Structure: Map<guildId, { queue: Array, player: AudioPlayer, currentSong: Object, textChannel: Object }>
@@ -84,6 +85,7 @@ export async function addAndPlay(interaction, guildId, query) {
             }),
             currentSong: null,
             textChannel: interaction.channel,
+            client: interaction.client,
         };
 
         // Subscribe connection to player
@@ -102,6 +104,9 @@ export async function addAndPlay(interaction, guildId, query) {
                         .setColor('#3498db')
                         .setDescription('🎵 Queue has finished! Staying in the voice channel (24/7 Pois).');
                     queueData.textChannel.send({ embeds: [embed] }).catch(() => {});
+                }
+                if (queueData.client) {
+                    queueData.client.user.setPresence(config.bot.presence);
                 }
             }
         });
@@ -148,6 +153,10 @@ async function playNext(guildId, song) {
 
         queueData.currentSong = song;
         queueData.player.play(resource);
+
+        if (queueData.client) {
+            queueData.client.user.setActivity(song.title, { type: ActivityType.Listening });
+        }
 
         if (queueData.textChannel) {
             const embed = new EmbedBuilder()
