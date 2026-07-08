@@ -53,25 +53,36 @@ export async function addAndPlay(interaction, guildId, query) {
     try {
         const isUrl = query.startsWith('http');
         if (isUrl) {
-            const ytInfo = await play.video_info(query);
-            songInfo = ytInfo.video_details;
+            if (query.includes('youtube.com') || query.includes('youtu.be')) {
+                // Try YouTube URL
+                const ytInfo = await play.video_info(query);
+                songInfo = ytInfo.video_details;
+            } else {
+                // Try SoundCloud or other URLs
+                const info = await play.soundcloud(query);
+                songInfo = info;
+            }
         } else {
-            const searchResults = await play.search(query, { limit: 1 });
+            // Search SoundCloud by default to bypass YouTube Data Center IP Blocks (429)
+            const searchResults = await play.search(query, { limit: 1, source: { soundcloud: 'tracks' } });
             if (!searchResults || searchResults.length === 0) {
-                return { success: false, message: 'Could not find any matching songs on YouTube.' };
+                return { success: false, message: 'Could not find any matching songs on SoundCloud.' };
             }
             songInfo = searchResults[0];
         }
     } catch (error) {
         logger.error('Music search error:', error);
-        return { success: false, message: 'Failed to search YouTube. The video might be restricted or age-gated.' };
+        if (error.message && error.message.includes('429')) {
+             return { success: false, message: 'YouTube rate-limited the server (Error 429). Please try using a SoundCloud URL or just type the song name to search via SoundCloud.' };
+        }
+        return { success: false, message: 'Failed to search for the song. The video might be restricted, age-gated, or unsupported.' };
     }
 
     const song = {
-        title: songInfo.title,
+        title: songInfo.title || songInfo.name,
         url: songInfo.url,
-        duration: songInfo.durationRaw,
-        thumbnail: songInfo.thumbnails?.[0]?.url,
+        duration: songInfo.durationRaw || 'Unknown',
+        thumbnail: songInfo.thumbnails?.[0]?.url || songInfo.thumbnail,
         requester: interaction.user,
     };
 
