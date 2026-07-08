@@ -16,7 +16,7 @@ export default {
     try {
       await InteractionHelper.safeDefer(interaction);
 
-      if (!config.bot.commands.owners.includes(interaction.user.id) && !(interaction.memberPermissions?.has(PermissionFlagsBits.Administrator))) {
+      if (!client.config.bot.commands.owners.includes(interaction.user.id) && !(interaction.memberPermissions?.has(PermissionFlagsBits.Administrator))) {
         return InteractionHelper.safeEditReply(interaction, { content: '❌ You must be an Administrator or Bot Owner.' });
       }
 
