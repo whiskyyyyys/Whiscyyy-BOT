@@ -2,23 +2,9 @@ import {
     joinVoiceChannel, 
     getVoiceConnection, 
     VoiceConnectionStatus, 
-    entersState,
-    createAudioPlayer,
-    NoSubscriberBehavior,
-    createAudioResource,
-    StreamType,
-    AudioPlayerStatus
+    entersState
 } from '@discordjs/voice';
-import { Readable } from 'stream';
 import { logger } from '../utils/logger.js';
-
-// Create an infinite silence stream to keep the connection alive
-class SilenceStream extends Readable {
-    _read() {
-        // Push 20ms of silence (48000Hz, 16-bit, stereo = 3840 bytes)
-        setTimeout(() => this.push(Buffer.alloc(3840)), 20);
-    }
-}
 
 export async function saveVoiceChannel(client, guildId, channelId) {
     if (!client.db) return;
@@ -57,31 +43,7 @@ export async function joinAndMaintain(client, guild, channelId) {
             guildId: guild.id,
             adapterCreator: guild.voiceAdapterCreator,
             selfDeaf: true,
-            selfMute: false, // We need to be unmuted to transmit silence
-        });
-
-        // Setup the audio player to prevent disconnects
-        const player = createAudioPlayer({
-            behaviors: {
-                noSubscriber: NoSubscriberBehavior.Play,
-            },
-        });
-
-        const playSilence = () => {
-            try {
-                const resource = createAudioResource(new SilenceStream(), { inputType: StreamType.Raw });
-                player.play(resource);
-            } catch (err) {
-                logger.error('[Voice 24/7] Error playing silence:', err);
-            }
-        };
-
-        connection.subscribe(player);
-        playSilence();
-
-        // Restart silence if it ever stops (though the stream is infinite)
-        player.on(AudioPlayerStatus.Idle, () => {
-            playSilence();
+            selfMute: false,
         });
 
         connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
@@ -99,9 +61,10 @@ export async function joinAndMaintain(client, guild, channelId) {
                 setTimeout(async () => {
                     const savedId = await getSavedVoiceChannel(client, guild.id);
                     if (savedId) {
+                        logger.info(`[Voice 24/7] Auto-reconnecting to channel ${savedId}...`);
                         joinAndMaintain(client, guild, savedId);
                     }
-                }, 10000);
+                }, 3000);
             }
         });
 
