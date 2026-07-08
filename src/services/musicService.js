@@ -119,8 +119,9 @@ export async function addAndPlay(interaction, guildId, query) {
         }
     } catch (error) {
         logger.error('Music search error:', error);
-        if (error.message && error.message.includes('429')) {
-             return { success: false, message: 'YouTube rate-limited the server (Error 429). Please try using a SoundCloud URL or just type the song name to search via SoundCloud.' };
+        const errMsg = error.message || '';
+        if (errMsg.includes('429') || errMsg.includes('Sign in') || errMsg.includes('bot')) {
+             return { success: false, message: 'YouTube blocked the server (Bot Protection). Please use a SoundCloud URL or just type the song name to search via SoundCloud.' };
         }
         return { success: false, message: 'Failed to search for the song. The video might be restricted, age-gated, or unsupported.' };
     }
