@@ -151,7 +151,15 @@ async function handleSlots(interaction, client, data, amount, userId, guildId) {
     .setFooter({ text: `Betting ${amount.toLocaleString()} whiscy 🪙` });
 
   await InteractionHelper.safeEditReply(interaction, { embeds: [animEmbed] });
-  await new Promise(resolve => setTimeout(resolve, 2500));
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  animEmbed.setDescription(`> ${results[0]} │ 🔄 │ 🔄\n\nSpinning the slots... 😵‍💫`);
+  await InteractionHelper.safeEditReply(interaction, { embeds: [animEmbed] });
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  animEmbed.setDescription(`> ${results[0]} │ ${results[1]} │ 🔄\n\nSpinning the slots... 😵‍💫`);
+  await InteractionHelper.safeEditReply(interaction, { embeds: [animEmbed] });
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
   logger.info(`[GAMBLE] Slots: ${userId} ${multiplier > 0 ? 'won' : 'lost'}, multiplier=${multiplier}`, {
     guildId, userId, amount, multiplier, results,
