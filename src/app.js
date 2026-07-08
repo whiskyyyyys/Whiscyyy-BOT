@@ -86,7 +86,7 @@ class TitanBot extends Client {
         ? 'Optional in-memory mode (data resets after restart)'
         : 'Connected (persistent data enabled)';
       startupLog(
-        `ONLINE ✅ | ${this.commands.size} commands loaded | Database: ${databaseMode}`
+        `ONLINE ✅ | v${pkg.version} | ${this.commands.size} commands loaded | Database: ${databaseMode}`
       );
     } catch (error) {
       logger.error('Failed to start bot:', error);
@@ -247,7 +247,7 @@ try {
       }
 
       logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-      bot.shutdown('UNHANDLED_REJECTION');
+      // bot.shutdown('UNHANDLED_REJECTION'); // Disabled to prevent 3rd party libs from killing the bot (e.g. play-dl 429)
     });
   };
   
