@@ -23,7 +23,7 @@ export default {
 
       // Cari VC tempat user berada
       const member = await interaction.guild.members.fetch(interaction.user.id);
-      const voiceChannel = member.voice.channel;
+      const voiceChannel = member.voice?.channel;
 
       if (!voiceChannel) {
         const embed = new EmbedBuilder()
@@ -48,7 +48,7 @@ export default {
 
     } catch (error) {
       logger.error('Join command error:', error);
-      await InteractionHelper.safeEditReply(interaction, { content: 'An error occurred while joining the voice channel.' });
+      await InteractionHelper.safeEditReply(interaction, { content: `An error occurred while joining the voice channel: \`${error.message}\`` });
     }
   },
 };
