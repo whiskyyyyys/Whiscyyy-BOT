@@ -7,7 +7,6 @@ import { validateChatInputPayloadOrThrow } from '../utils/commandInputValidation
 import { enforceAbuseProtection, formatCooldownDuration } from '../utils/abuseProtection.js';
 import { ResponseCoordinator } from '../utils/responseCoordinator.js';
 import { enforceDefaultCommandPermissions } from '../utils/permissionGuard.js';
-import { checkAndPromptRegistration } from '../services/whiscy/registrationService.js';
 
 function withTraceContext(context = {}, traceContext = {}) {
   return {
@@ -84,10 +83,6 @@ export default {
               return;
             }
 
-            if (command.category === 'Economy') {
-              const isRegistered = await checkAndPromptRegistration(interaction, client, true);
-              if (!isRegistered) return;
-            }
 
             await command.execute(interaction, guildConfig, client);
           } catch (error) {
